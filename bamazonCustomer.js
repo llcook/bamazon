@@ -43,49 +43,44 @@ function bamazon() {
                 }
             ])
             .then(function (answer) {
-                console.log(answer.itemSelect);
 
-                inquirer
-                    // how many units do you want to buy?
-                    .prompt([
-                        {
-                            name: "itemQuantity",
-                            type: "input",
-                            message: "How many?",
-                            validate: function(value) {
-                                if (isNaN(value) === false) {
-                                  return true;
+                var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
+
+                connection.query(query, { item_id: answer.itemSelect },
+                    function (err, res) {
+                        if (err) throw err;
+
+                        console.log(`You selected the ${res[0].product_name} for $${res[0].price}.`)
+
+                        inquirer
+                            // how many units do you want to buy?
+                            .prompt([
+                                {
+                                    name: "itemQuantity",
+                                    type: "input",
+                                    message: "How many would you like to buy?",
+                                    validate: function (value) {
+                                        if (isNaN(value) === false)  {
+                                            if (value > res[0].stock_quantity) {
+                                                console.log(`\nThere's not enough stock to fulfill your request. Please enter a quantity lower than ${value}.`);
+                                                return false;
+                                            }
+                                            return true;
+                                        }
+                                        console.log(`\n Error: Please enter a number.`);
+                                        return false;
+                                    }
                                 }
-                                return false;
-                              }
-                        }
-                    ])
-                    .then(function (quantity) {
-                        console.log(answer.itemSelect);
-                        console.log(quantity.itemQuantity);
+                            ])
+                            .then(function (quantity) {
 
-                        var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
+                                console.log("In stock!");
 
-                        connection.query(query, { item_id: answer.itemSelect },
-                            function (err, res) {
-                                if (err) throw err;
-                                console.log(res);
-
-                                // check stock_quantity
-                                // if items_wanted < stock_quantity
-                                if (quantity.itemQuantity < res[0].stock_quantity) {
                                     // fulfill order
                                     // update bamazon.sql to reflect remaining quantity
                                     // then show customer total cost of purchase
-                                    console.log("In stock!");
-
-                                } else {
-
-                                    // if items_wanted > stock_quantity, log "Insufficient quantity" and return to the units question
-                                    console.log(`There's not enough stock to fulfill your request. Please enter a lower quantity.`)
-                                }
                             }
-                        );
+                            );
                     });
             });
     });
