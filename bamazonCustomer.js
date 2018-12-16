@@ -74,10 +74,29 @@ function bamazon() {
                             ])
                             .then(function (quantity) {
 
+                                // fulfill order
                                 console.log("In stock!");
+                                
+                                // update bamazon.sql to reflect remaining quantity
+                                var updateInventory = "UPDATE products SET ? WHERE ?";
+                                var newStock = res[0].stock_quantity - quantity.itemQuantity;
+                                var selectedItem = res[0].item_id;
 
-                                    // fulfill order
-                                    // update bamazon.sql to reflect remaining quantity
+                                connection.query(updateInventory,
+                                    [
+                                        {
+                                            stock_quantity: newStock
+                                        },
+                                        {
+                                            item_id: selectedItem
+                                        }
+                                    ],
+                                    function (err) {
+                                        if (err) throw err;
+                                        console.log(`Stock remaining: ${newStock}`);
+                                        console.log(`Order placed successfully!`);
+                                    })
+
                                     // then show customer total cost of purchase
                             }
                             );
