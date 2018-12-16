@@ -15,10 +15,13 @@ connection.connect(function (err) {
 });
 
 function bamazon() {
-    // displayItems() -- show all of the items available for sale: item_id, product_name, price
+
+    // show all of the items available for sale
     connection.query("SELECT * FROM products ORDER BY products.product_name", function (err, res) {
         if (err) throw err;
-        console.log("Connected as ID: " + connection.threadId); // WORKS
+        welcomeMsg();
+
+        console.log(`\n============ Product List ===========\n\n`);
 
         // loop through products and log ID, product, price -- WORKS
         for (var i = 0; i < res.length; i++) {
@@ -26,17 +29,68 @@ function bamazon() {
             var product_name = res[i].product_name;
             var price = res[i].price;
 
-            console.log(`Product ID: ${item_id} | ${product_name} | $${price}`);
+            console.log(`${product_name} | $${price} | Product ID: ${item_id}\n`);
         }
 
         // inquirer: prompt user with two messages:
-        // ask user item_id of product_name they wanna buy
-        // how many units you wanna buy?
+        inquirer
+            .prompt([
+                // ask user item_id of product_name they wanna buy -- WORKS
+                {
+                    name: "itemSelect",
+                    type: "input",
+                    message: "Please enter the Product ID number for the item you'd like to buy:"
+                }
+            ])
+            .then(function (answer) {
+                console.log(answer.itemSelect);
 
-        // check stock_quantity:
-        // if items_wanted > stock_quantity, log "Insufficient quanity" and return to the units question
-        // if items_wanted < stock_quantity, fulfill order:
-        // update bamazon.sql to reflect remaining quantity
-        // then show customer total cost of purchase
-    })
+                inquirer
+                    // how many units do you want to buy?
+                    .prompt([
+                        {
+                            name: "itemQuantity",
+                            type: "input",
+                            message: "How many?",
+                            validate: function(value) {
+                                if (isNaN(value) === false) {
+                                  return true;
+                                }
+                                return false;
+                              }
+                        }
+                    ])
+                    .then(function (quantity) {
+                        console.log(answer.itemSelect);
+                        console.log(quantity.itemQuantity);
+
+                        var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
+
+                        connection.query(query, { item_id: answer.itemSelect },
+                            function (err, res) {
+                                if (err) throw err;
+                                console.log(res);
+
+                                // check stock_quantity
+                                // if items_wanted < stock_quantity
+                                if (quantity.itemQuantity < res[0].stock_quantity) {
+                                    // fulfill order
+                                    // update bamazon.sql to reflect remaining quantity
+                                    // then show customer total cost of purchase
+                                    console.log("In stock!");
+
+                                } else {
+
+                                    // if items_wanted > stock_quantity, log "Insufficient quantity" and return to the units question
+                                    console.log(`There's not enough stock to fulfill your request. Please enter a lower quantity.`)
+                                }
+                            }
+                        );
+                    });
+            });
+    });
+};
+
+function welcomeMsg() {
+    console.log(`*************************************\n*************************************\n*************************************\n======== WELCOME TO BAMAZON! ========\n*************************************\n*************************************\n*************************************\n\nYou're connected as ID: ${connection.threadId}\n`);
 }

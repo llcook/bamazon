@@ -15,7 +15,7 @@ CREATE TABLE products (
 INSERT INTO products (product_name, department_name, price, stock_quantity)
 VALUES
 ("Furby", "Toys", 45.99, 36),
-("Velvet sofa", "Furniture", 399.99, 14),
+("Velvet Sofa, Green", "Furniture", 399.99, 14),
 ("Deodorant", "Personal Care", 5.99, 64),
 ("Wooden Photo Frame", "Home Decor", 12.50, 159),
 ("Beach Barbie", "Toys", 22.99, 542),
