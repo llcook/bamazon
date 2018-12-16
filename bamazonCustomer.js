@@ -11,6 +11,7 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err) {
     if (err) throw err;
+    welcomeMsg();
     bamazon();
 });
 
@@ -19,7 +20,6 @@ function bamazon() {
     // show all of the items available for sale
     connection.query("SELECT * FROM products ORDER BY products.product_name", function (err, res) {
         if (err) throw err;
-        welcomeMsg();
 
         console.log(`\n============ Product List ===========\n\n`);
 
@@ -50,7 +50,7 @@ function bamazon() {
                     function (err, res) {
                         if (err) throw err;
 
-                        console.log(`You selected the ${res[0].product_name} for $${res[0].price}.`)
+                        console.log(`\n\nYou selected the ${res[0].product_name} for $${res[0].price}.\n\n`)
 
                         inquirer
                             // how many units do you want to buy?
@@ -74,8 +74,9 @@ function bamazon() {
                             ])
                             .then(function (quantity) {
 
+                                var totalPrice = res[0].price * quantity.itemQuantity;
                                 // fulfill order
-                                console.log("In stock!");
+                                console.log(`\nYour total is $${totalPrice}.\n`);
                                 
                                 // update bamazon.sql to reflect remaining quantity
                                 var updateInventory = "UPDATE products SET ? WHERE ?";
@@ -94,10 +95,10 @@ function bamazon() {
                                     function (err) {
                                         if (err) throw err;
                                         console.log(`Stock remaining: ${newStock}`);
-                                        console.log(`Order placed successfully!`);
+                                        console.log(`\n\nYour order has been sent!\n\n`);
+                                        bamazon();
                                     })
 
-                                    // then show customer total cost of purchase
                             }
                             );
                     });
