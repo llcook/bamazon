@@ -64,7 +64,7 @@ function bamazon() {
                                     validate: function (value) {
                                         if (isNaN(value) === false) {
                                             if (value > res[0].stock_quantity) {
-                                                console.log(`\nThere's not enough stock to fulfill your request. Please enter a quantity lower than ${value}.`);
+                                                console.log(`\n\nThere's not enough stock to fulfill your request. Please enter a quantity lower than ${value}.\n`);
                                                 return false;
                                             }
                                             return true;
@@ -76,10 +76,13 @@ function bamazon() {
                             ])
                             .then(function (quantity) {
 
-                                // calculates the total order price and sends fulfillment message
+                                console.log(`\nOrder complete!`);
+
+                                // calculates the total order price
                                 var totalPrice = res[0].price * quantity.itemQuantity;
-                                console.log(`\nYour total is $${totalPrice}.\n`);
-                                console.log(`\n\nYour order has been sent!\n\n`);
+
+                                // 
+                                console.log(`\nYour total is $${totalPrice.toFixed(2)}.`);
 
                                 // update bamazon.sql to reflect remaining quantity after user's purchase
                                 var updateInventory = "UPDATE products SET ? WHERE ?";
@@ -98,8 +101,23 @@ function bamazon() {
                                     function (err) {
                                         if (err) throw err;
 
-                                        // restart prompts
-                                        bamazon();
+                                        inquirer
+                                            .prompt([
+                                                {
+                                                    type: "confirm",
+                                                    message: "Would you like to shop again?",
+                                                    name: "confirm",
+                                                    default: true
+                                                }
+                                            ])
+                                            .then(function(response) {
+                                                if (response.confirm) {
+                                                    bamazon();
+                                                } else {
+                                                    console.log(`Thanks for shopping Bamazon! See you next time.`);
+                                                    connection.end();
+                                                }
+                                            })
                                     })
 
                             }
