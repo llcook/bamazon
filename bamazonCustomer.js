@@ -1,5 +1,5 @@
-var mysql = require("mysql"); // NPM I COMPLETE!
-var inquirer = require("inquirer"); // NPM I COMPLETE!
+var mysql = require("mysql");
+var inquirer = require("inquirer");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -17,13 +17,13 @@ connection.connect(function (err) {
 
 function bamazon() {
 
-    // show all of the items available for sale
+    // show items available for sale
     connection.query("SELECT * FROM products ORDER BY products.product_name", function (err, res) {
         if (err) throw err;
 
         console.log(`\n============ Product List ===========\n\n`);
 
-        // loop through products and log ID, product, price -- WORKS
+        // loop through products and display ID, name, price
         for (var i = 0; i < res.length; i++) {
             var item_id = res[i].item_id;
             var product_name = res[i].product_name;
@@ -32,10 +32,9 @@ function bamazon() {
             console.log(`${product_name} | $${price} | Product ID: ${item_id}\n`);
         }
 
-        // inquirer: prompt user with two messages:
+        // prompt user input
         inquirer
             .prompt([
-                // ask user item_id of product_name they wanna buy -- WORKS
                 {
                     name: "itemSelect",
                     type: "input",
@@ -44,6 +43,7 @@ function bamazon() {
             ])
             .then(function (answer) {
 
+                // target items in products table to compare with user input
                 var query = "SELECT item_id, product_name, price, stock_quantity FROM products WHERE ?";
 
                 connection.query(query, { item_id: answer.itemSelect },
@@ -53,14 +53,16 @@ function bamazon() {
                         console.log(`\n\nYou selected the ${res[0].product_name} for $${res[0].price}.\n\n`)
 
                         inquirer
-                            // how many units do you want to buy?
                             .prompt([
                                 {
                                     name: "itemQuantity",
                                     type: "input",
                                     message: "How many would you like to buy?",
+
+                                    // only allows program to move forward if user inputs a number
+                                    // and if that number is less than the remaining stock_quantity
                                     validate: function (value) {
-                                        if (isNaN(value) === false)  {
+                                        if (isNaN(value) === false) {
                                             if (value > res[0].stock_quantity) {
                                                 console.log(`\nThere's not enough stock to fulfill your request. Please enter a quantity lower than ${value}.`);
                                                 return false;
@@ -74,11 +76,12 @@ function bamazon() {
                             ])
                             .then(function (quantity) {
 
+                                // calculates the total order price and sends fulfillment message
                                 var totalPrice = res[0].price * quantity.itemQuantity;
-                                // fulfill order
                                 console.log(`\nYour total is $${totalPrice}.\n`);
-                                
-                                // update bamazon.sql to reflect remaining quantity
+                                console.log(`\n\nYour order has been sent!\n\n`);
+
+                                // update bamazon.sql to reflect remaining quantity after user's purchase
                                 var updateInventory = "UPDATE products SET ? WHERE ?";
                                 var newStock = res[0].stock_quantity - quantity.itemQuantity;
                                 var selectedItem = res[0].item_id;
@@ -94,8 +97,8 @@ function bamazon() {
                                     ],
                                     function (err) {
                                         if (err) throw err;
-                                        console.log(`Stock remaining: ${newStock}`);
-                                        console.log(`\n\nYour order has been sent!\n\n`);
+
+                                        // restart prompts
                                         bamazon();
                                     })
 
