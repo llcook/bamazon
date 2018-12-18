@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var table = require("console.table");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -29,7 +30,7 @@ function bamazon() {
             var product_name = res[i].product_name;
             var price = res[i].price;
 
-            console.log(`${product_name} | $${price} | Product ID: ${item_id}\n`);
+            console.table(`${product_name} | $${price} | Product ID: ${item_id}\n`);
         }
 
         // prompt user input
@@ -60,7 +61,7 @@ function bamazon() {
                                     message: "How many would you like to buy?",
 
                                     // only allows program to move forward if user inputs a number
-                                    // and if that number is less than the remaining stock_quantity
+                                    // and if that number is not greater than than the remaining stock_quantity
                                     validate: function (value) {
                                         if (isNaN(value) === false) {
                                             if (value > res[0].stock_quantity) {
@@ -110,7 +111,7 @@ function bamazon() {
                                                     default: true
                                                 }
                                             ])
-                                            .then(function(response) {
+                                            .then(function (response) {
                                                 if (response.confirm) {
                                                     bamazon();
                                                 } else {
