@@ -1,8 +1,6 @@
 # BAMAZON
 _A simple storefront and inventory database_
 
-[Demo] (https://drive.google.com/file/d/1qcNoKcftPkcG3bqqYWazCRoiuvbuaHJ1/view?usp=sharing)_
-
 ## HOW IT WORKS
 
 This application takes in user input for single-product purchases.
